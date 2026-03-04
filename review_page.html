@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리뷰 - RODILAB</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #fafafa;
+        }
+
+        /* 네비게이션 */
+        nav {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #307B52;
+            text-decoration: none;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .logo-img {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .logo:visited,
+        .logo:hover,
+        .logo:active {
+            color: #307B52;
+            text-decoration: none;
+        }
+
+        .nav-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-menu > li {
+            position: relative;
+        }
+
+        .nav-menu > li > a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-menu > li > a:hover {
+            color: #307B52;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            min-width: 180px;
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+        }
+
+        .dropdown li {
+            list-style: none;
+        }
+
+        .dropdown a {
+            display: block;
+            padding: 0.7rem 1.5rem;
+            color: #555;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .dropdown a:hover {
+            background: #f0f9f4;
+            color: #307B52;
+        }
+
+        .nav-menu > li:hover .dropdown {
+            display: block;
+        }
+
+        .cta-button {
+            background: #307B52;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .cta-button:hover {
+            background: #264A3A;
+        }
+
+        /* 햄버거 메뉴 스타일 */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+            background: none;
+            border: none;
+            padding: 0.5rem;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: #333;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(8px, 8px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+
+        .menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 998;
+        }
+        .menu-overlay.active { display: block; }
+
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+            z-index: 999;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+        .mobile-menu.active { right: 0; }
+
+        .mobile-menu-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mobile-logo-img {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        .close-mobile-menu {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .close-mobile-menu:hover { color: #333; }
+
+        .mobile-menu-list { list-style: none; padding: 1rem 0; }
+        .mobile-menu-list > li { border-bottom: 1px solid #f0f0f0; }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: #333;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+        .menu-toggle::after { content: "▼"; font-size: 0.7rem; margin-left: auto; }
+
+        .mobile-submenu {
+            display: none;
+            list-style: none;
+            background: #f9f9f9;
+            padding: 0;
+        }
+        .mobile-submenu.active { display: block; }
+        .mobile-submenu a {
+            display: block;
+            padding: 0.8rem 1.5rem 0.8rem 2.5rem;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        /* 페이지 헤더 */
+        .page-header {
+            background: linear-gradient(135deg, #307B52 0%, #55A759 100%);
+            color: white;
+            padding: 4rem 2rem 3rem;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .page-header p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+        }
+
+        /* 섹션 */
+        .section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            color: #307B52;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        /* 리뷰 그리드 */
+        .review-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .review-card {
+            position: relative;
+            height: 300px;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(48, 123, 82, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .review-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(48, 123, 82, 0.25);
+        }
+
+        .review-card::before {
+            display: none;
+        }
+
+        .review-card:nth-child(1) { background-image: url('images/review_1.jpeg'); }
+        .review-card:nth-child(2) { background-image: url('images/review_2.jpeg'); }
+        .review-card:nth-child(3) { background-image: url('images/review_3.jpg'); }
+        .review-card:nth-child(4) { background-image: url('images/review_4.jpg'); }
+        .review-card:nth-child(5) { background-image: url('images/review_5.jpeg'); }
+        .review-card:nth-child(6) { background-image: url('images/review_6.jpg'); }
+
+        .review-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 25px;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .review-card:hover .review-overlay {
+            opacity: 0;
+        }
+
+        .review-title {
+            color: #55A759;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .review-text {
+            color: white;
+            font-size: 14px;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            line-clamp: 4;
+            overflow: hidden;
+        }
+
+        /* 푸터 */
+        footer {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            color: #ccc;
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3rem;
+        }
+
+        .footer-section h3 {
+            color: #2D8659;
+            margin-bottom: 1rem;
+        }
+
+        .footer-section p,
+        .footer-section a {
+            color: #999;
+            text-decoration: none;
+            line-height: 2;
+        }
+
+        .footer-section a:hover {
+            color: #2D8659;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #333;
+            color: #666;
+        }
+
+        .contact-phone {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #55A759;
+            text-decoration: none;
+            cursor: pointer;
+            margin: 0;
+            line-height: 1;
+        }
+
+        br.mob-only {
+            display: none;
+        }
+
+        br.pc-only {
+            display: block;
+        }
+
+        /* 기존 CSS 하단부의 미디어 쿼리를 아래 내용으로 교체하세요 */
+        @media (max-width: 768px) {
+            .nav-center { display: none; }
+            .hamburger { display: flex; }
+    
+            /* 리뷰 그리드 수정: 한 줄에 1개씩 보이도록 변경 */
+            .review-grid {
+                grid-template-columns: 1fr; /* 2fr에서 1fr로 변경 */
+                gap: 20px;
+            }
+
+            /* 모바일에서 카드의 가독성을 위해 높이를 소폭 조정 (선택 사항) */
+            .review-card {
+                height: 280px; 
+            }
+
+            .page-header h1 { font-size: 2rem; }
+            .page-header p { font-size: 1rem; }
+            .footer-content { grid-template-columns: 1fr; }
+            br.mob-only { display: block; }
+            br.pc-only { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <img src="./images/logo_1.png" alt="로디랩 로고" class="mobile-logo-img">
+            <button class="close-mobile-menu" onclick="closeMobileMenu()">✕</button>
+        </div>
+        <ul class="mobile-menu-list">
+            <li>
+                <button class="menu-toggle" onclick="toggleSubmenu(this)">로디랩 소개</button>
+                <ul class="mobile-submenu">
+                    <li><a href="brand_page.html" onclick="closeMobileMenu()">브랜드 소개</a></li>
+                    <li><a href="activities_page.html" onclick="closeMobileMenu()">활동 내역</a></li>
+                    <li><a href="teacher_page.html" onclick="closeMobileMenu()">로디쌤</a></li>
+                </ul>
+            </li>
+            <li>
+                <button class="menu-toggle" onclick="toggleSubmenu(this)">패키지 소개</button>
+                <ul class="mobile-submenu">
+                    <li><a href="package_page.html" onclick="closeMobileMenu()">패키지 소개</a></li>
+                    <li><a href="contents_page.html" onclick="closeMobileMenu()">구성 소개</a></li>
+                    <li><a href="enterprise_page.html" onclick="closeMobileMenu()">기업 전용</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="review_page.html" style="display: block; padding: 1rem 1.5rem; color: #333; text-decoration: none; font-weight: 500;" onclick="closeMobileMenu()">리뷰</a>
+            </li>
+        </ul>
+    </div>
+
+    <nav>
+        <div class="nav-container">
+            <a href="index.html"><div class="logo">
+                <img src="./images/logo_1.png" alt="로디랩 로고" class="logo-img">
+            </div></a>
+            <div class="nav-center">
+                <ul class="nav-menu">
+                    <li>
+                        <a href="brand_page.html">로디랩 소개</a>
+                        <ul class="dropdown">
+                            <li><a href="brand_page.html">브랜드 소개</a></li>
+                            <li><a href="activities_page.html">활동 내역</a></li>
+                            <li><a href="teacher_page.html">로디쌤</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="package_page.html">패키지 소개</a>
+                        <ul class="dropdown">
+                            <li><a href="package_page.html">패키지 소개</a></li>
+                            <li><a href="contents_page.html">구성 소개</a></li>
+                            <li><a href="enterprise_page.html">기업 전용</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="review_page.html">리뷰</a>
+                        <ul class="dropdown">
+                            <li><a href="review_page.html">서비스 리뷰</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="nav-right">
+                <button class="hamburger" id="hamburger" onclick="openMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <a href="consult_page.html" class="cta-button">상담 신청</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <h1>리뷰</h1>
+        <p>로디랩 교육을 경험한 분들의 소중한 이야기</p>
+    </div>
+
+    <div class="section">
+        <div class="review-grid">
+            <div class="review-card">
+                <div class="review-overlay">
+                    <div class="review-title">용기를 만들어준 교육</div>
+                    <div class="review-text">잘못 누르면 큰일날까봐, 무서워서 아무것도 못 눌렀는데, 옆에서 같이 봐주니까 용기 있게 눌러보고, <br> 배울 수 있었어요.
+                    손주한테 문자를 너무 보내고 <br>싶었는데, 이젠 혼자서도 보낼 수 있어요.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-overlay">
+                    <div class="review-title">우물 안 개구리였던 나를, <br>세상 밖으로 <br class="mob-only">꺼내준 교육</div>
+                    <div class="review-text">로디랩이 천천히, 꼼꼼하게 가르쳐줘서 너무 잘 배울 수 있었어요. 이젠 사진도 잘 찍고, 동네 분들한테<br>
+                        알려드리기도 하는 정도에요. <br> 아이에서 성인으로 성장한 기분이 들어요!
+                    </div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-overlay">
+                    <div class="review-title">이루 말할 수 없이 좋았던 <br class="mob-only">교육</div>
+                    <div class="review-text">그동안 기회가 없어서, 이런 교육을 듣지 못햇었는데, <br>들을 수 있어 너무 좋았어요.
+                        이제 손주들이랑 카톡도 <br>빠르게 주고 받을 수 있어서 매우 기쁘고, 행복합니다.
+                    </div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-overlay">
+                    <div class="review-title">스마트폰, 이제 혼자서도 <br>자신있게 쓸 수 있을 거 같아요</div>
+                    <div class="review-text">평소에 스마트폰으로 전화 밖에 사용하지 못해서, 많이 <br>답답했어요. 로디랩 교육을 통해
+                        문자, 카톡도 자신있게 할 수 있고, 네이버 지도와 같은 유용한 앱도 잘 쓰고 <br>있어요. 요즘은 제가 친구들을 알려주곤 해요!
+                    </div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-overlay">
+                    <div class="review-title">내 생활을 <br class="mob-only">바꿨던 수업</div>
+                    <div class="review-text">사진을 문자로 어떻게 보내는 지를 몰라서 집 수리 의뢰를 계속 못하고 있었어요.
+                        그래서 불편해도 꾹 참고 계속 <br>버텼는데, 수업을 듣고, 수리 의뢰를 혼자서 할 수 있게 <br>되어 너무 다행이었고,
+                        좋은 수업 너무 감사해요.
+                    </div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-overlay">
+                    <div class="review-title">실생활에 너무 유용했던 수업</div>
+                    <div class="review-text">그동안 스마트폰 교육을 몇 번 들었었는데, 전부 도움이 안 됐어요.
+                        로디랩 수업은 실생활에 필요한 것들을 <br>차근차근 알려주니까 실제로도 너무 편리한 생활을 <br>보내고 있어요.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>로디랩</h3>
+                <p>부모님의 디지털 일상을 함께하는<br>교육 혁신 기업입니다.</p>
+            </div>
+            <div class="footer-section">
+                <h3>빠른 링크</h3>
+                <p><a href="brand_page.html">로디랩 소개</a></p>
+                <p><a href="package_page.html">패키지 소개</a></p>
+                <p><a href="review_page.html">서비스 리뷰</a></p>
+            </div>
+            <div class="footer-section contact-section">
+                <h3>문의</h3>
+                <p class="contact-phone">010-5946-1124</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 로디랩(RODILAB). All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function openMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const overlay = document.getElementById('menuOverlay');
+            const hamburger = document.getElementById('hamburger');
+            
+            mobileMenu.classList.add('active');
+            overlay.classList.add('active');
+            hamburger.classList.add('active');
+        }
+
+        function closeMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const overlay = document.getElementById('menuOverlay');
+            const hamburger = document.getElementById('hamburger');
+            
+            mobileMenu.classList.remove('active');
+            overlay.classList.remove('active');
+            hamburger.classList.remove('active');
+        }
+
+        function toggleSubmenu(button) {
+            const submenu = button.nextElementSibling;
+            submenu.classList.toggle('active');
+            button.classList.toggle('active');
+        }
+
+        document.getElementById('menuOverlay').addEventListener('click', closeMobileMenu);
+    </script>
+</body>
+</html>

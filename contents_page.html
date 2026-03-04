@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>구성 소개 - RODILAB</title>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #fafafa;
+        }
+
+        /* 스크롤 애니메이션 스타일 */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(60px);
+            transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 네비게이션 */
+        nav {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #307B52;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .logo-img {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .logo:visited,
+        .logo:hover,
+        .logo:active {
+            color: #307B52;
+            text-decoration: none;
+        }
+
+        .nav-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-menu > li {
+            position: relative;
+        }
+
+        .nav-menu > li > a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-menu > li > a:hover {
+            color: #307B52;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            min-width: 180px;
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+        }
+
+        .dropdown li {
+            list-style: none;
+        }
+
+        .dropdown a {
+            display: block;
+            padding: 0.7rem 1.5rem;
+            color: #555;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .dropdown a:hover {
+            background: #f0f9f4;
+            color: #307B52;
+        }
+
+        .nav-menu > li:hover .dropdown {
+            display: block;
+        }
+
+        .cta-button {
+            background: #307B52;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .cta-button:hover {
+            background: #264A3A;
+        }
+
+        /* 햄버거 메뉴 버튼 */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+            background: none;
+            border: none;
+            padding: 0.5rem;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: #333;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(8px, 8px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+
+        /* 모바일 메뉴 스타일 */
+        .menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 998;
+        }
+        .menu-overlay.active { display: block; }
+
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+            z-index: 999;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+        .mobile-menu.active { right: 0; }
+
+        .mobile-menu-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* [수정됨] 모바일 메뉴 헤더 로고 이미지 스타일 */
+        .mobile-logo-img {
+            height: 40px; /* 로고 크기 조정 (너무 크지 않게 설정) */
+            width: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        .close-mobile-menu {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-menu-list { list-style: none; padding: 1rem 0; }
+        .mobile-menu-list > li { border-bottom: 1px solid #f0f0f0; }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: #333;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+        .menu-toggle::after { content: "▼"; font-size: 0.7rem; margin-left: auto; }
+
+        .mobile-submenu {
+            display: none;
+            list-style: none;
+            background: #f9f9f9;
+            padding: 0;
+        }
+        .mobile-submenu.active { display: block; }
+
+        .mobile-submenu a {
+            display: block;
+            padding: 0.8rem 1.5rem 0.8rem 2.5rem;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        /* 페이지 헤더 */
+        .page-header {
+            background: linear-gradient(135deg, #307B52 0%, #55A759 100%);
+            color: white;
+            padding: 4rem 2rem 3rem;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .page-header p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+        }
+
+        /* 섹션 */
+        .section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        /* 컨텐츠 아이템 */
+        .content-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+            margin-bottom: 5rem;
+        }
+
+        .content-item.reverse {
+            direction: rtl;
+        }
+
+        .content-item.reverse > * {
+            direction: ltr;
+        }
+
+        .content-image {
+            width: 100%;
+            height: 350px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(48, 123, 82, 0.25);
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+        }
+
+        .content-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .content-image:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(48, 123, 82, 0.35);
+        }
+
+        .content-text h3 {
+            font-size: 2rem;
+            color: #307B52;
+            margin-bottom: 1.5rem;
+        }
+
+        .content-text p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 1rem;
+        }
+
+        .content-text p:last-child {
+            margin-bottom: 0;
+        }
+
+        .content-text .highlight {
+            color: #307B52; font-weight: 600;
+            background: linear-gradient(120deg, rgba(48, 123, 82, 0.1) 0%, rgba(48, 123, 82, 0.1) 100%);
+            padding: 0 0.3rem; border-radius: 4px;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(48, 123, 82, 0.05) 0%, rgba(85, 167, 89, 0.05) 100%);
+            border-left: 4px solid #307B52;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .highlight-box:hover {
+            border-left-color: #55A759;
+            box-shadow: 0 4px 12px rgba(48, 123, 82, 0.15);
+        }
+
+        .highlight-box p {
+            margin: 0;
+            color: #307B52;
+            font-weight: 500;
+        }
+
+        /* 푸터 */
+        footer {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            color: #ccc;
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3rem;
+        }
+
+        .footer-section h3 {
+            color: #2D8659;
+            margin-bottom: 1rem;
+        }
+
+        .footer-section p,
+        .footer-section a {
+            color: #999;
+            text-decoration: none;
+            line-height: 2;
+        }
+
+        .footer-section a:hover {
+            color: #2D8659;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #333;
+            color: #666;
+        }
+
+        .contact-phone {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #55A759;
+            text-decoration: none;
+            cursor: pointer;
+            margin: 0;
+            line-height: 1;
+        }
+
+        br.mob-only {
+            display: none;
+        }
+
+        br.pc-only {
+            display: block;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .nav-center { display: none; }
+            .hamburger { display: flex; }
+
+            .content-item {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .content-item.reverse {
+                direction: ltr;
+            }
+
+            .content-image {
+                height: 250px;
+            }
+
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .page-header p {
+                font-size: 1rem;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+
+            br.mob-only {
+                display: block;
+            }
+
+            br.pc-only {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <img src="./images/logo_1.png" alt="로디랩 로고" class="mobile-logo-img">
+            <button class="close-mobile-menu" onclick="closeMobileMenu()">✕</button>
+        </div>
+        <ul class="mobile-menu-list">
+            <li>
+                <button class="menu-toggle" onclick="toggleSubmenu(this)">로디랩 소개</button>
+                <ul class="mobile-submenu">
+                    <li><a href="brand_page.html" onclick="closeMobileMenu()">브랜드 소개</a></li>
+                    <li><a href="activities_page.html" onclick="closeMobileMenu()">활동 내역</a></li>
+                    <li><a href="teacher_page.html" onclick="closeMobileMenu()">로디쌤</a></li>
+                </ul>
+            </li>
+            <li>
+                <button class="menu-toggle" onclick="toggleSubmenu(this)">서비스 소개</button>
+                <ul class="mobile-submenu">
+                    <li><a href="package_page.html" onclick="closeMobileMenu()">서비스 소개</a></li>
+                    <li><a href="contents_page.html" onclick="closeMobileMenu()">구성 소개</a></li>
+                    <li><a href="enterprise_page.html" onclick="closeMobileMenu()">기관 전용</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="review_page.html" style="display: block; padding: 1rem 1.5rem; color: #333; text-decoration: none; font-weight: 500;" onclick="closeMobileMenu()">수강생 리뷰</a>
+            </li>
+        </ul>
+    </div>
+
+    <nav>
+        <div class="nav-container">
+            <a href="index.html"><div class="logo">
+                <img src="./images/logo_1.png" alt="로디랩 로고" class="logo-img">
+            </div></a>
+            <div class="nav-center">
+                <ul class="nav-menu">
+                    <li>
+                        <a href="brand_page.html">로디랩 소개</a>
+                        <ul class="dropdown">
+                            <li><a href="brand_page.html">브랜드 소개</a></li>
+                            <li><a href="activities_page.html">활동 내역</a></li>
+                            <li><a href="teacher_page.html">로디쌤</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="package_page.html">서비스 소개</a>
+                        <ul class="dropdown">
+                            <li><a href="package_page.html">서비스 소개</a></li>
+                            <li><a href="contents_page.html">구성 소개</a></li>
+                            <li><a href="enterprise_page.html">기관 전용</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="review_page.html">리뷰</a>
+                        <ul class="dropdown">
+                            <li><a href="review_page.html">수강생 리뷰</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="nav-right">
+                <button class="hamburger" id="hamburger" onclick="openMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <a href="consult_page.html" class="cta-button">상담 신청</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-header fade-in-up">
+        <h1>구성 소개</h1>
+        <p>로디랩의 핵심 서비스 컨텐츠를 만나보세요</p>
+    </div>
+
+    <div class="section">
+        <div class="content-item fade-in-up">
+            <div class="content-image">
+                <img src="images/con_contents_1.jpeg" alt="시니어 맞춤형 학습지">
+            </div>
+            <div class="content-text">
+                <h3>시니어 맞춤형 학습지</h3>
+                <p>
+                    로디랩은 시니어 세대를 위해 특별히 제작한 <br class="mob-only">학습지를 제공합니다. 
+                    <br><span class="highlight">글씨, 명확한 그림, 단계별 설명</span>으로 누구나 <br class="mob-only">쉽게 따라할 수 있습니다.
+                </p>
+                <p>
+                    복잡한 기술 용어는 최소화하고, 실생활에 <br class="mob-only">필요한 핵심 내용만 담았습니다. 
+                    <br><span class="highlight">수업 후에도 집에서 천천히 복습</span>할 수 있도록 체계적으로 구성했습니다.
+                </p>
+                <div class="highlight-box">
+                    <p>✓ 각 단계별로 따라하기 쉬운 구성</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-item reverse fade-in-up">
+            <div class="content-image">
+                <img src="images/con_contents_2.jpeg" alt="철저한 반복 학습 컨텐츠">
+            </div>
+            <div class="content-text">
+                <h3>철저한 반복 학습 컨텐츠</h3>
+                <p>
+                    적응하기 어려운 디지털 기기 사용법을 <br class="mob-only">습득하기 위해선, 
+                    반복 학습이 <br class="pc-only">매우 중요하다고 <br class="mob-only">느꼈습니다.
+                </p>
+                <p>
+                    <span class="highlight">같은 내용을 다양한 형태의 문제를 풀며, <br class="mob-only">여러 번 반복</span>하며 배울 수 있도록 <br>설계했습니다. 
+                    이를 통해 기술이 자연스러운<br class="mob-only"> 습관이 되고, <br class="pc-only">어떤 상황에서도 자신감 있게 활용할 수 있습니다.
+                </p>
+                <div class="highlight-box">
+                    <p>✓ 충분한 연습을 통한 완전한 습득</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-item fade-in-up">
+            <div class="content-image">
+                <img src="images/con_contents_3.png" alt="맞춤형 학습 관리">
+            </div>
+            <div class="content-text">
+                <h3>맞춤형 학습 관리 서비스</h3>
+                <p>
+                    진행한 디지털 기기 교육의 효과성을 <br class="mob-only">지속하기 위해선, 
+                    맞춤 관리가 <br class="pc-only">매우 중요하다고 <br class="mob-only">느꼈습니다.
+                </p>
+                <p>
+                    <span class="highlight">AI를 도입한 로디랩만의 관리 서비스</span>를 이용해, <br>수업 일지를 토대로 적절한 학습법을 도입하고, 철저한 오답 관리를 <br>할 수 있게끔 설계했습니다. 
+                    이를 통해 <span class="highlight">매 회차 <br class="mob-only"> 더 나은 교육을 수강하고, <br class="pc-only">여타 교육보다 훨씬 높은 효과</span>를 얻을 수 있습니다.
+                </p>
+                <div class="highlight-box">
+                    <p>✓ 맞춤형 교수법과 오답 관리를 통한 교육 효과 증대</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>로디랩</h3>
+                <p>시니어의 디지털 일상을 함께하는<br>교육 혁신 기업입니다.</p>
+            </div>
+            <div class="footer-section">
+                <h3>빠른 링크</h3>
+                <p><a href="brand_page.html">로디랩 소개</a></p>
+                <p><a href="package_page.html">서비스 소개</a></p>
+                <p><a href="review_page.html">수강생 리뷰</a></p>
+            </div>
+            <div class="footer-section contact-section">
+                <h3>문의</h3>
+                <p class="contact-phone">010-5946-1124</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 로디랩(RODILAB). All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // 모바일 메뉴 기능
+        function openMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const overlay = document.getElementById('menuOverlay');
+            const hamburger = document.getElementById('hamburger');
+            
+            mobileMenu.classList.add('active');
+            overlay.classList.add('active');
+            hamburger.classList.add('active');
+        }
+
+        function closeMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const overlay = document.getElementById('menuOverlay');
+            const hamburger = document.getElementById('hamburger');
+            
+            mobileMenu.classList.remove('active');
+            overlay.classList.remove('active');
+            hamburger.classList.remove('active');
+        }
+
+        function toggleSubmenu(button) {
+            const submenu = button.nextElementSibling;
+            submenu.classList.toggle('active');
+            button.classList.toggle('active');
+        }
+
+        document.getElementById('menuOverlay').addEventListener('click', closeMobileMenu);
+
+        // 스크롤 애니메이션 기능
+        const observerOptions = {
+            threshold: 0.15,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
+
+        // 부드러운 스크롤
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#' && document.querySelector(href)) {
+                    e.preventDefault();
+                    document.querySelector(href).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

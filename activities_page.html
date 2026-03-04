@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>활동 내역 - RODILAB</title>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(60px);
+            transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 통계 카드 (상단 3개) 순차 등장 */
+        .stats-grid .stat-card:nth-child(1) { transition-delay: 0s; }
+        .stats-grid .stat-card:nth-child(2) { transition-delay: 0.15s; }
+        .stats-grid .stat-card:nth-child(3) { transition-delay: 0.3s; }
+
+        /* 수상 내역 (하단 4개) 순차 등장 */
+        .awards-grid > div:nth-child(1) { transition-delay: 0s; }
+        .awards-grid > div:nth-child(2) { transition-delay: 0.15s; }
+        .awards-grid > div:nth-child(3) { transition-delay: 0.3s; }
+        .awards-grid > div:nth-child(4) { transition-delay: 0.45s; }
+
+        /* =========================================
+           3. 네비게이션 스타일
+           ========================================= */
+        nav {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #307B52;
+            text-decoration: none;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .logo-img {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .nav-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-menu > li {
+            position: relative;
+        }
+
+        .nav-menu > li > a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-menu > li > a:hover {
+            color: #307B52;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            min-width: 180px;
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+        }
+
+        .dropdown li { list-style: none; }
+        
+        .dropdown a {
+            display: block;
+            padding: 0.7rem 1.5rem;
+            color: #555;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .dropdown a:hover {
+            background: #f0f9f4;
+            color: #307B52;
+        }
+
+        .nav-menu > li:hover .dropdown {
+            display: block;
+        }
+
+        .cta-button {
+            background: #307B52;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .cta-button:hover {
+            background: #264A3A;
+        }
+
+        /* 햄버거 메뉴 버튼 */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+            background: none;
+            border: none;
+            padding: 0.5rem;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: #333;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(8px, 8px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+
+        /* 오버레이 */
+        .menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 998;
+        }
+        .menu-overlay.active { display: block; }
+
+        /* 모바일 사이드 메뉴 */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+            z-index: 999;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+        .mobile-menu.active { right: 0; }
+
+        .mobile-menu-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* [수정됨] 모바일 메뉴 헤더 로고 이미지 스타일 */
+        .mobile-logo-img {
+            height: 40px; /* 로고 크기 조정 (너무 크지 않게 설정) */
+            width: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        .close-mobile-menu {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-menu-list { list-style: none; padding: 1rem 0; }
+        .mobile-menu-list > li { border-bottom: 1px solid #f0f0f0; }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: #333;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        .menu-toggle::after { content: "▼"; font-size: 0.7rem; margin-left: auto; }
+
+        .mobile-submenu {
+            display: none;
+            list-style: none;
+            background: #f9f9f9;
+            padding: 0;
+        }
+        .mobile-submenu.active { display: block; }
+        .mobile-submenu a {
+            display: block;
+            padding: 0.8rem 1.5rem 0.8rem 2.5rem;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        /* 페이지 헤더 */
+        .page-header {
+            background: linear-gradient(135deg, #307B52 0%, #55A759 100%);
+            color: white;
+            padding: 4rem 2rem 3rem;
+            text-align: center;
+        }
+        .page-header h1 { font-size: 3rem; margin-bottom: 1rem; }
+        .page-header p { font-size: 1.3rem; opacity: 0.9; }
+
+        /* 섹션 */
+        .section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        /* 타임라인 섹션 배경 */
+        .timeline-section {
+            position: relative;
+            padding: 4rem 2rem;
+            margin: 0 auto;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .timeline-section::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.88);
+            z-index: 0;
+        }
+
+        .timeline-section-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .timeline-section.bg-1 { background-image: url('./images/act_timeline_1.JPG'); }
+        .timeline-section.bg-2 { background-image: url('./images/act_timeline_2.JPG'); }
+        .timeline-section.bg-3 { background-image: url('./images/act_timeline_3.jpeg'); }
+
+        /* 타임라인 */
+        .timeline-container {
+            position: relative;
+            padding: 2rem 0;
+            overflow: visible;
+        }
+        .timeline-line {
+            position: absolute; left: 50%; top: -100px; bottom: -100px;
+            width: 3px; background: linear-gradient(180deg, #307B52 0%, #55A759 100%);
+            transform: translateX(-50%); z-index: 0;
+        }
+
+        .timeline-item {
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; margin-bottom: 4rem; position: relative; z-index: 1; min-height: 120px;
+        }
+        .timeline-item.left { flex-direction: row; }
+        .timeline-item.right { flex-direction: row-reverse; }
+
+        .timeline-content-wrapper { width: 45%; flex: 1; }
+        .timeline-spacer { width: 45%; flex: 1; }
+        .timeline-dot-wrapper {
+            width: 10%; display: flex; justify-content: center; align-items: center;
+            position: static; z-index: 10; min-height: 120px;
+        }
+
+        .timeline-item.left .timeline-content-wrapper { text-align: right; padding-right: 2rem; }
+        .timeline-item.right .timeline-content-wrapper { text-align: left; padding-left: 2rem; }
+
+        .timeline-content {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem; border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(48, 123, 82, 0.15);
+            border: 2px solid #307B52;
+            display: inline-block; width: 100%; text-align: left;
+            position: relative;
+        }
+
+        .timeline-dot {
+            width: 28px; height: 28px; background: #307B52;
+            border: 4px solid white; border-radius: 50%;
+            box-shadow: 0 0 0 3px #307B52; position: absolute; z-index: 20;
+            left: 50%; top: 50%; transform: translate(-50%, -50%);
+            flex-shrink: 0;
+        }
+
+        .timeline-dot.active {
+            background: #55A759; box-shadow: 0 0 0 3px #55A759;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.15); }
+        }
+
+        .timeline-date { color: #307B52; font-size: 1.65rem; margin-bottom: 0.5rem; font-weight: 700; }
+        .timeline-title { color: #333; font-size: 1.55rem; margin-bottom: 1rem; font-weight: 600; }
+        .timeline-description { color: #222; line-height: 1.65; font-weight: 500; font-size: 1.1rem; }
+
+        /* 통계 섹션 */
+        .stats-section {
+            background: linear-gradient(135deg, rgba(48, 123, 82, 0.05) 0%, rgba(85, 167, 89, 0.05) 100%);
+            padding: 3rem; border-radius: 16px; margin-bottom: 4rem;
+            border: 1px solid rgba(48, 123, 82, 0.2);
+        }
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 2rem;
+        }
+        .stat-card {
+            text-align: center; padding: 2rem; background: white;
+            border-radius: 12px; box-shadow: 0 2px 8px rgba(48, 123, 82, 0.08);
+            border-left: 4px solid #307B52; transition: all 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px); box-shadow: 0 8px 16px rgba(48, 123, 82, 0.15);
+            border-left-color: #55A759;
+        }
+        .stat-number {
+            font-size: 3rem; font-weight: bold;
+            background: linear-gradient(135deg, #307B52 0%, #55A759 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; margin-bottom: 0.5rem;
+        }
+        .stat-label { color: #307B52; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.3rem; }
+        .stat-desc { color: #666; font-size: 0.95rem; }
+
+        /* 수상 내역 그리드 (클래스 추가됨) */
+        .awards-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;
+        }
+
+        /* 푸터 */
+        footer {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            color: #ccc; padding: 3rem 2rem; margin-top: 4rem;
+        }
+        .footer-content {
+            max-width: 1200px; margin: 0 auto; display: grid;
+            grid-template-columns: repeat(3, 1fr); gap: 3rem;
+        }
+        .footer-section h3 { color: #2D8659; margin-bottom: 1rem; }
+        .footer-section p, .footer-section a { color: #999; text-decoration: none; line-height: 2; }
+        .footer-section a:hover { color: #2D8659; }
+        .footer-bottom { text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #333; color: #666; }
+        .contact-phone { font-size: 2rem; font-weight: bold; color: #55A759; text-decoration: none; cursor: pointer; margin: 0; line-height: 1; }
+
+        br.mob-only { display: none; }
+        br.pc-only { display: block; }
+
+        @media (max-width: 768px) {
+            .nav-center { display: none; }
+            .hamburger { display: flex; }
+
+            /* --- 타임라인 모바일 레이아웃 수정 --- */
+            .timeline-line { 
+                left: 50%; /* 선을 다시 중앙으로 */
+                top: 0;
+                bottom: 0;
+                opacity: 0.5;
+            }
+
+            .timeline-item, .timeline-item.left, .timeline-item.right {
+                flex-direction: column !important; /* 세로 방향으로 */
+                align-items: center !important;
+                margin-bottom: 4rem;
+                padding: 0.1rem
+            }
+
+            .timeline-dot-wrapper {
+                display: none !important;
+            }
+
+            .timeline-content-wrapper {
+                width: 100% !important; /* 카드가 화면을 거의 다 채우도록 */
+                max-width: 400px;
+                padding: 0 !important;
+                text-align: center !important; /* 텍스트 중앙 정렬 */
+            }
+
+            .timeline-content {
+                background: rgba(255,255,255,0.95);
+                border: 1.5px solid #307B52;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+                text-align: center !important; /* 내부 텍스트도 중앙 */
+            }
+
+            .timeline-spacer { display: none; }
+
+            /* 배경 가독성 및 효과 */
+            .timeline-section { 
+                background-attachment: scroll; /* 모바일 성능을 위해 고정 해제 */
+                padding: 3rem 1rem;
+            }
+            .timeline-section::before {
+                background: rgba(255, 255, 255, 0.92); /* 배경 이미지가 살짝 더 잘 보이게 조정 */
+            }
+
+            /* 기타 모바일 스타일 */
+            .page-header h1 { font-size: 2.2rem; }
+            .page-header p { font-size: 1rem; }
+            .stats-grid, .awards-grid, .footer-content { grid-template-columns: 1fr !important; }
+
+            /* 모바일에서 수상 내역도 1줄로 */
+            .awards-grid { grid-template-columns: 1fr !important; }
+            .footer-content { grid-template-columns: 1fr !important; }
+            .timeline-section { background-attachment: scroll; }
+
+            br.mob-only { display: block; }
+            br.pc-only { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <img src="./images/logo_1.png" alt="로디랩 로고" class="mobile-logo-img">
+            <button class="close-mobile-menu" onclick="closeMobileMenu()">✕</button>
+        </div>
+        <ul class="mobile-menu-list">
+            <li>
+                <button class="menu-toggle" onclick="toggleSubmenu(this)">로디랩 소개</button>
+                <ul class="mobile-submenu">
+                    <li><a href="brand_page.html" onclick="closeMobileMenu()">브랜드 소개</a></li>
+                    <li><a href="activities_page.html" onclick="closeMobileMenu()">활동 내역</a></li>
+                    <li><a href="teacher_page.html" onclick="closeMobileMenu()">로디쌤</a></li>
+                </ul>
+            </li>
+            <li>
+                <button class="menu-toggle" onclick="toggleSubmenu(this)">서비스 소개</button>
+                <ul class="mobile-submenu">
+                    <li><a href="package_page.html" onclick="closeMobileMenu()">서비스 소개</a></li>
+                    <li><a href="contents_page.html" onclick="closeMobileMenu()">구성 소개</a></li>
+                    <li><a href="enterprise_page.html" onclick="closeMobileMenu()">기관 전용</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="review_page.html" style="display: block; padding: 1rem 1.5rem; color: #333; text-decoration: none; font-weight: 500;" onclick="closeMobileMenu()">수강생 리뷰</a>
+            </li>
+        </ul>
+    </div>
+
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <img src="./images/logo_1.png" alt="로디랩 로고" class="logo-img">
+            </a>
+            <div class="nav-center">
+                <ul class="nav-menu">
+                    <li>
+                        <a href="brand_page.html">로디랩 소개</a>
+                        <ul class="dropdown">
+                            <li><a href="brand_page.html">브랜드 소개</a></li>
+                            <li><a href="activities_page.html">활동 내역</a></li>
+                            <li><a href="teacher_page.html">로디쌤</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="package_page.html">서비스 소개</a>
+                        <ul class="dropdown">
+                            <li><a href="package_page.html">서비스 소개</a></li>
+                            <li><a href="contents_page.html">구성 소개</a></li>
+                            <li><a href="enterprise_page.html">기관 전용</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="review_page.html">리뷰</a>
+                        <ul class="dropdown">
+                            <li><a href="review_page.html">수강생 리뷰</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="nav-right">
+                <button class="hamburger" id="hamburger" onclick="openMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <a href="consult_page.html" class="cta-button">상담 신청</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-header fade-in-up">
+        <h1>활동 내역</h1>
+        <p>로디랩이 걸어온 여정</p>
+    </div>
+
+    <div class="section">
+        <div class="stats-section fade-in-up">
+            <h2 style="text-align: center; color: #307B52; font-size: 2rem; margin-bottom: 0.5rem;">지금까지의 성과</h2>
+            <p style="text-align: center; color: #666; margin-bottom: 1rem;">숫자로 보는 로디랩의 임팩트</p>
+            <div class="stats-grid">
+                <div class="stat-card fade-in-up">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">누적 교육 인원</div>
+                    <div class="stat-desc">복지관 및 경로당 중심</div>
+                </div>
+                <div class="stat-card fade-in-up">
+                    <div class="stat-number">250%</div>
+                    <div class="stat-label">디지털 역량 향상</div>
+                    <div class="stat-desc">평균 2.5단계 상승</div>
+                </div>
+                <div class="stat-card fade-in-up">
+                    <div class="stat-number">4개</div>
+                    <div class="stat-label">창업 지원 프로그램 <br class="mob-only">선정</div>
+                    <div class="stat-desc">검증된 사회적 가치</div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="fade-in-up" style="text-align: center; color: #307B52; font-size: 2rem; margin-bottom: 3rem;">활동 타임라인</h2>
+        
+        <div class="timeline-section bg-1">
+            <div class="timeline-section-content">
+                <div class="timeline-container">
+                    <div class="timeline-line"></div>
+                    
+                    <div class="timeline-item left fade-in-up">
+                        <div class="timeline-content-wrapper">
+                            <div class="timeline-content">
+                                <div class="timeline-date">2024년 겨울</div>
+                                <div class="timeline-title">팀 결성 및 사업 기획</div>
+                                <div class="timeline-description">
+                                    가천대학교 인액터스 소속 학생들이 모여 <br>시니어 디지털 격차 문제를 해결하기 위한 로디랩 <br>프로젝트를 시작했습니다.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-dot-wrapper">
+                            <div class="timeline-dot"></div>
+                        </div>
+                        <div class="timeline-spacer"></div>
+                    </div>
+
+                    <div class="timeline-item right fade-in-up">
+                        <div class="timeline-content-wrapper">
+                            <div class="timeline-content">
+                                <div class="timeline-date">2025년 2월</div>
+                                <div class="timeline-title">무료 교육 테스트</div>
+                                <div class="timeline-description">
+                                    성남 산성복지관, 마크뷰경로당에서 첫 교육 프로그램을 <br>시작했습니다. 
+                                    "스마트폰 관련 가장 효과적인 교육이다."<br>
+                                    등의 긍정적인 반응을 얻을 수 있었습니다.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-dot-wrapper">
+                            <div class="timeline-dot"></div>
+                        </div>
+                        <div class="timeline-spacer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="timeline-section bg-2">
+            <div class="timeline-section-content">
+                <div class="timeline-container">
+                    <div class="timeline-line"></div>
+
+                    <div class="timeline-item left fade-in-up">
+                        <div class="timeline-content-wrapper">
+                            <div class="timeline-content">
+                                <div class="timeline-date">2025년 4월</div>
+                                <div class="timeline-title">교육 프로그램 확대</div>
+                                <div class="timeline-description">
+                                    기초반, 심화반으로 커리큘럼을 세분화하고, <br>
+                                    두 번째 무료 교육을 위한 준비를 진행했습니다.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-dot-wrapper">
+                            <div class="timeline-dot"></div>
+                        </div>
+                        <div class="timeline-spacer"></div>
+                    </div>
+
+                    <div class="timeline-item right fade-in-up">
+                        <div class="timeline-content-wrapper">
+                            <div class="timeline-content">
+                                <div class="timeline-date">2025년 상반기</div>
+                                <div class="timeline-title">50명 누적 교육 달성</div>
+                                <div class="timeline-description">
+                                    무료 교육 서비스 수강생을 50명 기록했습니다.<br>
+                                    평균 디지털 역량 2.5단계(250%) 향상이라는 성과를 <br>기록했습니다.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-dot-wrapper">
+                            <div class="timeline-dot"></div>
+                        </div>
+                        <div class="timeline-spacer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="timeline-section bg-3">
+            <div class="timeline-section-content">
+                <div class="timeline-container">
+                    <div class="timeline-line"></div>
+
+                    <div class="timeline-item left fade-in-up">
+                        <div class="timeline-content-wrapper">
+                            <div class="timeline-content">
+                                <div class="timeline-date">2025년 10월</div>
+                                <div class="timeline-title">정식 서비스 런칭</div>
+                                <div class="timeline-description">
+                                    25년 10월, 로디랩의 서비스가 정식으로 런칭되었습니다.
+                                    <br>서비스 런칭 이후 한 달만에 4명의 고객을 확보했고, 
+                                    <br>계속해서 고객을 유치하고 있습니다.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-dot-wrapper">
+                            <div class="timeline-dot"></div>
+                        </div>
+                        <div class="timeline-spacer"></div>
+                    </div>
+
+                    <div class="timeline-item right fade-in-up">
+                        <div class="timeline-content-wrapper">
+                            <div class="timeline-content" style="background: rgba(48, 123, 82, 0.92); color: white; border: 2px solid #55A759;">
+                                <div class="timeline-date" style="color: #fff;">현재 진행중</div>
+                                <div class="timeline-title" style="color: white;">지속적인 교육 확대와 성장</div>
+                                <div class="timeline-description" style="color: rgba(255,255,255,0.9);">
+                                    다양한 지역으로 개인 맞춤화 교육을 나가고 있으며,<br> 교육 피드백을 통해 즉각적인 디벨롭을 진행하고 있습니다.
+                                    또한, 더 많은 복지관의 협업을 기획하고 있습니다.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-dot-wrapper">
+                            <div class="timeline-dot active"></div>
+                        </div>
+                        <div class="timeline-spacer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section fade-in-up">
+        <div style="margin-top: 2rem; padding: 2.5rem; background: linear-gradient(135deg, rgba(48, 123, 82, 0.05) 0%, rgba(85, 167, 89, 0.05) 100%); border-radius: 16px; border: 1px solid rgba(48, 123, 82, 0.2);">
+            <h3 style="color: #307B52; font-size: 1.8rem; margin-bottom: 2rem; text-align: center;">🏆 수상 및 인증</h3>
+            <div class="awards-grid">
+                <div class="fade-in-up" style="padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(48, 123, 82, 0.08); border-left: 4px solid #307B52;">
+                    <h4 style="color: #307B52; margin-bottom: 0.5rem;">✅ 현대해상 씨앗 지원사업</h4>
+                    <p style="color: #666;">피칭 대회 준우승</p>
+                </div>
+                <div class="fade-in-up" style="padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(48, 123, 82, 0.08); border-left: 4px solid #55A759;">
+                    <h4 style="color: #307B52; margin-bottom: 0.5rem;">✅ 하나소셜벤처 유니버시티</h4>
+                    <p style="color: #666;">소셜벤처 육성 프로그램 선정</p>
+                </div>
+                <div class="fade-in-up" style="padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(48, 123, 82, 0.08); border-left: 4px solid #307B52;">
+                    <h4 style="color: #307B52; margin-bottom: 0.5rem;">✅ 스타트업 영그라운드</h4>
+                    <p style="color: #666;">청년 창업 우수 스타트업 선정</p>
+                </div>
+                <div class="fade-in-up" style="padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(48, 123, 82, 0.08); border-left: 4px solid #55A759;">
+                    <h4 style="color: #307B52; margin-bottom: 0.5rem;">✅ 인액터스 국내대회</h4>
+                    <p style="color: #666;">Rising Star Awards 선정</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>로디랩</h3>
+                <p>시니어의 디지털 일상을 함께하는<br>교육 혁신 기업입니다.</p>
+            </div>
+            <div class="footer-section">
+                <h3>빠른 링크</h3>
+                <p><a href="brand_page.html">로디랩 소개</a></p>
+                <p><a href="package_page.html">서비스 소개</a></p>
+                <p><a href="review_page.html">수강생 리뷰</a></p>
+            </div>
+            <div class="footer-section contact-section">
+                <h3>문의</h3>
+                <p class="contact-phone">010-5946-1124</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 로디랩(RODILAB). All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // ===== 모바일 메뉴 토글 (공통 스크립트) =====
+        function openMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const overlay = document.getElementById('menuOverlay');
+            const hamburger = document.getElementById('hamburger');
+            
+            mobileMenu.classList.add('active');
+            overlay.classList.add('active');
+            hamburger.classList.add('active');
+        }
+
+        function closeMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const overlay = document.getElementById('menuOverlay');
+            const hamburger = document.getElementById('hamburger');
+            
+            mobileMenu.classList.remove('active');
+            overlay.classList.remove('active');
+            hamburger.classList.remove('active');
+        }
+
+        function toggleSubmenu(button) {
+            const submenu = button.nextElementSibling;
+            submenu.classList.toggle('active');
+            button.classList.toggle('active');
+        }
+
+        document.getElementById('menuOverlay').addEventListener('click', closeMobileMenu);
+
+        // ===== 스크롤 애니메이션 스크립트 =====
+        const observerOptions = {
+            threshold: 0.1, // 요소가 10% 정도 보이면 트리거
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
+        
+        // ===== 부드러운 스크롤 (anchor 링크) =====
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#' && document.querySelector(href)) {
+                    e.preventDefault();
+                    document.querySelector(href).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

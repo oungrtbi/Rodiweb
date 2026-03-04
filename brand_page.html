@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>브랜드 소개 - RODILAB</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .logo-img {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* 네비게이션 */
+        nav {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            /* z-index 수정: 모바일 메뉴(999)보다 낮게 설정 */
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #307B52;
+            text-decoration: none;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .nav-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .logo:visited,
+        .logo:hover,
+        .logo:active {
+            color: #307B52;
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-menu > li {
+            position: relative;
+        }
+
+        .nav-menu > li > a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-menu > li > a:hover {
+            color: #2D8659;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            min-width: 180px;
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+        }
+
+        .dropdown li {
+            list-style: none;
+        }
+
+        .dropdown a {
+            display: block;
+            padding: 0.7rem 1.5rem;
+            color: #555;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .dropdown a:hover {
+            background: #f0f9f4;
+            color: #2D8659;
+        }
+
+        .nav-menu > li:hover .dropdown {
+            display: block;
+        }
+
+        .cta-button {
+            background: #307B52;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .cta-button:hover {
+            background: #264A3A;
+        }
+
+        /* 햄버거 메뉴 버튼 */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+            background: none;
+            border: none;
+            padding: 0.5rem;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: #333;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        /* 오버레이 */
+        .menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 998;
+        }
+
+        .menu-overlay.active {
+            display: block;
+        }
+
+        /* 모바일 사이드 메뉴 */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+            z-index: 999;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* [수정됨] 모바일 메뉴 헤더 로고 이미지 스타일 */
+        .mobile-logo-img {
+            height: 40px; /* 로고 크기 조정 (너무 크지 않게 설정) */
+            width: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        .close-mobile-menu {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            /* 1번 코드와 동일하게 스타일 보정 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-mobile-menu:hover {
+            color: #333;
+        }
+
+        .mobile-menu-list {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .mobile-menu-list > li {
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: #333;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .menu-toggle:hover {
+            background: #f3f9f5;
+            color: #307B52;
+        }
+
+        .menu-toggle.active::after {
+            transform: rotate(180deg);
+        }
+
+        .menu-toggle::after {
+            content: "▼";
+            font-size: 0.7rem;
+            transition: transform 0.3s;
+            margin-left: auto;
+        }
+
+        .mobile-submenu {
+            display: none;
+            list-style: none;
+            background: #f9f9f9;
+            padding: 0;
+        }
+
+        .mobile-submenu.active {
+            display: block;
+        }
+
+        .mobile-submenu li {
+            list-style: none;
+        }
+
+        .mobile-submenu a {
+            display: block;
+            padding: 0.8rem 1.5rem 0.8rem 2.5rem;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: background 0.3s;
+        }
+
+        .mobile-submenu a:hover {
+            background: #f0f0f0;
+            color: #307B52;
+        }
+
+        .mobile-menu-cta {
+            padding: 1.5rem;
+            border-top: 1px solid #eee;
+            margin-top: 1rem;
+        }
+
+        .mobile-menu-cta a {
+            display: block;
+            background: #307B52;
+            color: white;
+            padding: 0.8rem 1rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            text-align: center;
+            transition: background 0.3s;
+        }
+
+        .mobile-menu-cta a:hover {
+            background: #264A3A;
+        }
+
+        /* ===== 스크롤 애니메이션 ===== */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .fade-in-left {
+            opacity: 0;
+            transform: translateX(-40px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        .fade-in-left.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .fade-in-right {
+            opacity: 0;
+            transform: translateX(40px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        .fade-in-right.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .stagger-item {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .stagger-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stagger-item:nth-child(1) { transition-delay: 0s; }
+        .stagger-item:nth-child(2) { transition-delay: 0.15s; }
+        .stagger-item:nth-child(3) { transition-delay: 0.3s; }
+        .stagger-item:nth-child(4) { transition-delay: 0.45s; }
+
+        /* 페이지 헤더 */
+        .page-header {
+            background: linear-gradient(135deg, #2D8659 0%, #4CAF50 100%);
+            color: white;
+            padding: 4rem 2rem 3rem;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .page-header p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+        }
+
+        /* 섹션 */
+        .section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        /* 브랜드 로고 및 소개 */
+        .brand-intro {
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+            margin-bottom: 4rem;
+        }
+
+        .brand-logo {
+            width: 300px;
+            height: 300px;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 8px 24px rgba(45, 134, 89, 0.3);
+            padding: 20px;
+        }
+
+        .brand-logo img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .brand-text {
+            flex: 1;
+        }
+
+        .brand-text h2 {
+            font-size: 2rem;
+            color: #2D8659;
+            margin-bottom: 1rem;
+        }
+
+        .brand-text p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 1rem;
+        }
+
+        .brand-text .highlight {
+            color: #307B52;
+            font-weight: 600;
+            background: linear-gradient(120deg, rgba(48, 123, 82, 0.1) 0%, rgba(48, 123, 82, 0.1) 100%);
+            padding: 0 0.3rem;
+            border-radius: 4px;
+        }
+
+        /* 미션과 비전 */
+        .mission-vision {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .mv-card {
+            padding: 2.5rem;
+            background: #f0f9f4;
+            border-radius: 16px;
+            border-left: 6px solid #2D8659;
+        }
+
+        .mv-card h3 {
+            font-size: 1.8rem;
+            color: #2D8659;
+            margin-bottom: 1.5rem;
+        }
+
+        .mv-card p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        /* 차별점 */
+        .differences-title {
+            font-size: 2rem;
+            color: #2D8659;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .difference-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .difference-item {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .difference-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(45, 134, 89, 0.2);
+        }
+
+        .difference-image {
+            width: 100%;
+            height: 380px;
+            overflow: hidden;
+            background: #f0f9f4;
+        }
+
+        .difference-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .difference-content {
+            padding: 2rem;
+        }
+
+        .difference-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2D8659;
+            margin-bottom: 0.5rem;
+        }
+
+        .difference-content h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .difference-content p {
+            color: #666;
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        /* 푸터 */
+        footer {
+            background: #1a1a1a;
+            color: #ccc;
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3rem;
+        }
+
+        .footer-section h3 {
+            color: #2D8659;
+            margin-bottom: 1rem;
+        }
+
+        .footer-section p,
+        .footer-section a {
+            color: #999;
+            text-decoration: none;
+            line-height: 2;
+        }
+
+        .footer-section a:hover {
+            color: #2D8659;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #333;
+            color: #666;
+        }
+
+        .contact-phone {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #55A759;
+            text-decoration: none;
+            cursor: pointer;
+            margin: 0;
+            line-height: 1;
+        }
+
+        br.mob-only {
+            display: none;
+        }
+
+        br.pc-only {
+            display: block;
+        }
+        
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .brand-intro {
+                flex-direction: column;
+            }
+
+            .brand-logo {
+                width: 100%;
+                height: auto;
+            }
+
+            .difference-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .mission-vision {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            br.mob-only {
+                display: block;
+            }
+
+            br.pc-only {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <img src="./images/logo_1.png" alt="로디랩 로고" class="mobile-logo-img">
+            <button class="close-mobile-menu" onclick="closeMobileMenu()">✕</button>
+        </div>
+        <ul class="mobile-menu-list">
+            <li>
+                <button class="menu-toggle" onclick="toggleSubmenu(this)">로디랩 소개</button>
+                <ul class="mobile-submenu">
+                    <li><a href="brand_page.html" onclick="closeMobileMenu()">브랜드 소개</a></li>
+                    <li><a href="activities_page.html" onclick="closeMobileMenu()">활동 내역</a></li>
+                    <li><a href="teacher_page.html" onclick="closeMobileMenu()">로디쌤</a></li>
+                </ul>
+            </li>
+            <li>
+                <button class="menu-toggle" onclick="toggleSubmenu(this)">서비스 소개</button>
+                <ul class="mobile-submenu">
+                    <li><a href="package_page.html" onclick="closeMobileMenu()">서비스 소개</a></li>
+                    <li><a href="contents_page.html" onclick="closeMobileMenu()">구성 소개</a></li>
+                    <li><a href="enterprise_page.html" onclick="closeMobileMenu()">기관 전용</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="review_page.html" style="display: block; padding: 1rem 1.5rem; color: #333; text-decoration: none; font-weight: 500; transition: background 0.3s;" onmouseover="this.style.background='#f3f9f5'; this.style.color='#307B52';" onmouseout="this.style.background='white'; this.style.color='#333';" onclick="closeMobileMenu()">수강생 리뷰</a>
+            </li>
+        </ul>
+    </div>
+
+    <nav>
+        <div class="nav-container">
+            <a href="index.html"><div class="logo">
+                <img src="./images/logo_1.png" alt="로디랩 로고" class="logo-img">
+            </div></a>
+            <div class="nav-center">
+                <ul class="nav-menu">
+                    <li>
+                        <a href="brand_page.html">로디랩 소개</a>
+                        <ul class="dropdown">
+                            <li><a href="brand_page.html">브랜드 소개</a></li>
+                            <li><a href="activities_page.html">활동 내역</a></li>
+                            <li><a href="teacher_page.html">로디쌤</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="package_page.html">서비스 소개</a>
+                        <ul class="dropdown">
+                            <li><a href="package_page.html">서비스 소개</a></li>
+                            <li><a href="contents_page.html">구성 소개</a></li>
+                            <li><a href="enterprise_page.html">기관 전용</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="review_page.html">리뷰</a>
+                        <ul class="dropdown">
+                            <li><a href="review_page.html">수강생 리뷰</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="nav-right">
+                <button class="hamburger" id="hamburger" onclick="openMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <a href="consult_page.html" class="cta-button">상담 신청</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <h1>브랜드 소개</h1>
+        <p>시니어 디지털 격차 해소를 위한 <br class="mob-only">혁신적인 교육 솔루션</p>
+    </div>
+
+    <div class="section fade-in-up">
+        <div class="brand-intro">
+            <div class="brand-logo fade-in-left">
+                <img src="./images/logo.png" alt="RODILAB 로고">
+            </div>
+            <div class="brand-text fade-in-right">
+                <h2>로디랩 (RODILAB)</h2>
+                <p>
+                    <span class="highlight">老人 (노인) + Digital (디지털) + Lab (연구소)</span>의 합성어로, 
+                    시니어 세대의 디지털 격차 해소를 목표로 하는 <br class="pc-only">기업입니다.
+                </p>
+                <p>
+                    가천대학교 인액터스 소속 창업팀으로 시작하여, 2025년 11월부터 본격적인 시니어 디지털 교육 서비스를 제공하고 있습니다. 
+                    <span class="highlight">단순한 기술 교육을 넘어, 시니어 세대가 디지털 사회에서 <br class="mob-only">소외되지 않고 자신감을 가질 수 있도록 <br class="pc-only">돕는 것</span>이 우리의 목표입니다.
+                </p>
+                <p>
+                    <span class="highlight">대학생 튜터가 직접 찾아가는 방문 교육, 1:1 <br class="mob-only">또는 소그룹 맞춤형 교육 형태, 자체 제작 <br class="mob-only">학습지와 다양한 컨텐츠</span>를 
+                    <br class="pc-only">통한 체계적 학습 지원으로 <br class="mob-only">높은 교육 만족도와 실질적인 디지털 역량 향상을 이끌어내고 있습니다.
+                </p>
+            </div>
+        </div>
+
+        <div class="mission-vision fade-in-up">
+            <div class="mv-card stagger-item">
+                <h3>🎯 Mission</h3>
+                <p>
+                    시니어 세대가 디지털 시대에서 <br class="mob-only">소외되지 않고, 자녀·손주를 포함한 다양한 사회구성원과 
+                    자유롭게 소통하며, 일상생활에서<br class="pc-only"> 디지털 도구를 자신감 있게 활용할 수 있도록 돕습니다.
+                </p>
+            </div>
+            <div class="mv-card stagger-item">
+                <h3>🌟 Vision</h3>
+                <p>
+                    교육을 통해 시니어가 디지털 사회의 편리함을 <br class="mob-only"> 누릴 수 있는 기반을 마련하는 기업
+                </p>
+            </div>
+        </div>
+
+        <h3 class="differences-title fade-in-up">브랜드 강점 및 차별점</h3>
+        <div class="difference-grid fade-in-up">
+            <div class="difference-item stagger-item">
+                <div class="difference-image">
+                    <img src="./images/bra_brand_1.jpeg" alt="1:1 또는 1:3 맞춤형 교육">
+                </div>
+                <div class="difference-content">
+                    <div class="difference-number">01</div>
+                    <h3>1:1 또는 1:3 맞춤형 교육</h3>
+                    <p>개인의 수준과 속도에 맞춘 소그룹 교육으로 이해도를 높입니다. <br class="pc-only">대규모 강의가 아닌 밀착 케어로 한 분, 한 분의 성장을 책임집니다.</p>
+                </div>
+            </div>
+            <div class="difference-item stagger-item">
+                <div class="difference-image">
+                    <img src="./images/bra_brand_2.jpeg" alt="찾아가는 방문 교육">
+                </div>
+                <div class="difference-content">
+                    <div class="difference-number">02</div>
+                    <h3>찾아가는 방문 교육</h3>
+                    <p>가정, 복지관, 경로당 등 익숙한 공간에서 <br class="mob-only">편안하게 배울 수 있습니다.<br>이동의 번거로움을 해소합니다.</p>
+                </div>
+            </div>
+            <div class="difference-item stagger-item">
+                <div class="difference-image">
+                    <img src="./images/bra_brand_3.jpeg" alt="철저한 복습이 가능한 컨텐츠">
+                </div>
+                <div class="difference-content">
+                    <div class="difference-number">03</div>
+                    <h3>철저한 복습이 가능한 컨텐츠</h3>
+                    <p>복습과 반복 학습이 가능한 체계적인 컨텐츠를 제공합니다. 수업 후에도 <br class="pc-only">집에서 혼자<br class="mob-only"> 다시 풀어볼 수 있는 다양한 컨텐츠를<br class="mob-only"> 제공합니다.</p>
+                </div>
+            </div>
+            <div class="difference-item stagger-item">
+                <div class="difference-image">
+                    <img src="./images/bra_brand_4.jpeg" alt="생활 밀착형 커리큘럼">
+                </div>
+                <div class="difference-content">
+                    <div class="difference-number">04</div>
+                    <h3>생활 밀착형 커리큘럼</h3>
+                    <p>스마트폰 기초, 카카오톡, 지도, 온라인 예매 등 실생활에 바로 적용 가능한 내용을 <br class="mob-only">다룹니다. 이론이 아닌 실전 중심 교육을 <br class="mob-only">제공합니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>로디랩</h3>
+                <p>시니어의 디지털 일상을 함께하는<br>교육 혁신 기업입니다.</p>
+            </div>
+            <div class="footer-section">
+                <h3>빠른 링크</h3>
+                <p><a href="brand_page.html">로디랩 소개</a></p>
+                <p><a href="package_page.html">서비스 소개</a></p>
+                <p><a href="review_page.html">수강생 리뷰</a></p>
+            </div>
+            <div class="footer-section contact-section">
+                <h3>문의</h3>
+                <p class="contact-phone">010-5946-1124</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 로디랩(RODILAB). All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // ===== 모바일 메뉴 토글 (1번 코드와 동일한 방식) =====
+        function openMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const overlay = document.getElementById('menuOverlay');
+            const hamburger = document.getElementById('hamburger');
+            
+            mobileMenu.classList.add('active');
+            overlay.classList.add('active');
+            hamburger.classList.add('active');
+        }
+
+        function closeMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const overlay = document.getElementById('menuOverlay');
+            const hamburger = document.getElementById('hamburger');
+            
+            mobileMenu.classList.remove('active');
+            overlay.classList.remove('active');
+            hamburger.classList.remove('active');
+        }
+
+        function toggleSubmenu(button) {
+            const submenu = button.nextElementSibling;
+            submenu.classList.toggle('active');
+            button.classList.toggle('active');
+        }
+
+        // 오버레이 클릭 시 메뉴 닫기
+        document.getElementById('menuOverlay').addEventListener('click', closeMobileMenu);
+
+        // ===== 스크롤 애니메이션 =====
+        const observerOptions = {
+            threshold: 0.15,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
+        document.querySelectorAll('.fade-in-left').forEach(el => observer.observe(el));
+        document.querySelectorAll('.fade-in-right').forEach(el => observer.observe(el));
+        document.querySelectorAll('.stagger-item').forEach(el => observer.observe(el));
+
+        // 부드러운 스크롤
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#' && document.querySelector(href)) {
+                    e.preventDefault();
+                    document.querySelector(href).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
